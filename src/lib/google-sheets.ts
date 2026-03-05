@@ -1,6 +1,5 @@
 import { google } from "googleapis";
 import { format, parse } from "date-fns";
-import credentials from "../../credentials.json";
 
 // Mesma ID da planilha usada no Python
 const SPREADSHEET_ID = '1-q0436ZSSHvQzzSmEu7yd7dW-XFliVcgqM6JUOV0fyA';
@@ -23,6 +22,29 @@ export type RondaRecord = {
 
 // Autenticação singleton para GSheets
 const getAuth = () => {
+    let credentials;
+
+    // Tenta carregar das variáveis de ambiente (Vercel/Produção)
+    if (process.env.GOOGLE_SHEETS_JSON) {
+        try {
+            credentials = JSON.parse(process.env.GOOGLE_SHEETS_JSON);
+        } catch (e) {
+            console.error("Erro ao fazer parse de GOOGLE_SHEETS_JSON:", e);
+        }
+    }
+
+    // Se não encontrou na env ou falhou o parse, tenta carregar do arquivo local
+    if (!credentials) {
+        try {
+            // Usamos require dinâmico para evitar erro de build se o arquivo não existir
+            // (que é o caso da Vercel onde o arquivo é ignorado pelo git)
+            credentials = require("../../credentials.json");
+        } catch (e) {
+            console.error("credentials.json não encontrado localmente e GOOGLE_SHEETS_JSON não configurado.");
+            throw new Error("Configuração de credenciais do Google Sheets ausente.");
+        }
+    }
+
     return new google.auth.GoogleAuth({
         credentials: {
             client_email: credentials.client_email,
