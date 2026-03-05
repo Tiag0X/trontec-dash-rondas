@@ -64,7 +64,11 @@ export function ParetoBases({ data }: { data: RondaRecord[] }) {
                                     dataKey="Base"
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fontSize: 10, fill: "#64748b", angle: -45, textAnchor: 'end' }}
+                                    tick={({ x, y, payload }: any) => (
+                                        <text x={x} y={y} dy={4} fontSize={10} fill="#64748b" textAnchor="end" transform={`rotate(-45, ${x}, ${y})`}>
+                                            {payload.value}
+                                        </text>
+                                    )}
                                     height={60}
                                 />
                                 <YAxis
