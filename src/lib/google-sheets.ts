@@ -25,10 +25,8 @@ const getAuth = () => {
     const raw = process.env.GOOGLE_SHEETS_JSON;
 
     if (!raw) {
-        throw new Error(
-            "Variável de ambiente GOOGLE_SHEETS_JSON não configurada. " +
-            "Adicione-a no painel da Vercel ou no arquivo .env.local."
-        );
+        console.warn("[Build] GOOGLE_SHEETS_JSON não disponível — página será pré-renderizada sem dados.");
+        return null;
     }
 
     const credentials = JSON.parse(raw);
@@ -46,6 +44,7 @@ const getAuth = () => {
 export async function getMasterBases(): Promise<string[]> {
     try {
         const auth = getAuth();
+        if (!auth) return [];
         const sheets = google.sheets({ version: "v4", auth });
 
         const response = await sheets.spreadsheets.values.get({
@@ -77,6 +76,7 @@ export async function getMasterBases(): Promise<string[]> {
 export async function getSheetData(): Promise<RondaRecord[]> {
     try {
         const auth = getAuth();
+        if (!auth) return [];
         const sheets = google.sheets({ version: "v4", auth });
 
         const response = await sheets.spreadsheets.values.get({
