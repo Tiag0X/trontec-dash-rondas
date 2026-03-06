@@ -37,7 +37,7 @@ export function DashboardView({ initialData, masterBases }: DashboardViewProps) 
         setIsMounted(true);
     }, []);
 
-    const { totalAlertas, basesNaoCobertas, warningLevel } = useMemo(() => {
+    const { totalAlertas, basesNaoCobertas, warningLevel, greenLevel } = useMemo(() => {
         // Últimos 3 dias
         const threeDaysAgo = startOfDay(subDays(new Date(), 3));
 
@@ -62,7 +62,8 @@ export function DashboardView({ initialData, masterBases }: DashboardViewProps) 
         return {
             totalAlertas: alertsCount,
             basesNaoCobertas: missBases,
-            warningLevel: missBases > (activeBasesCount * 0.2) // Se mais de 20% não foi coberta, aciona um alerta crítico visual
+            warningLevel: missBases > (activeBasesCount * 0.2), // Se mais de 20% não foi coberta, aciona um alerta crítico visual
+            greenLevel: missBases <= (activeBasesCount * 0.05)   // Se 5% ou menos descoberta, fica verde (quase 100% coberto)
         };
     }, [data, masterBases]);
 
@@ -129,19 +130,19 @@ export function DashboardView({ initialData, masterBases }: DashboardViewProps) 
                             </CardContent>
                         </Card>
 
-                        <Card className={`bg-white/50 backdrop-blur-xl border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col ${warningLevel ? "border-red-300 bg-red-50/30" : ""}`}>
+                        <Card className={`bg-white/50 backdrop-blur-xl border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col ${warningLevel ? "border-red-300 bg-red-50/30" : greenLevel ? "border-emerald-300 bg-emerald-50/30" : ""}`}>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className={`text-sm font-medium ${warningLevel ? "text-red-600 font-bold" : "text-slate-500"}`}>Bases Sem Ronda (72h)</CardTitle>
-                                <MapPin className={`h-4 w-4 ${warningLevel ? "text-red-500 animate-pulse" : "text-slate-400"}`} />
+                                <CardTitle className={`text-sm font-medium ${warningLevel ? "text-red-600 font-bold" : greenLevel ? "text-emerald-600 font-bold" : "text-slate-500"}`}>Bases Sem Ronda (72h)</CardTitle>
+                                <MapPin className={`h-4 w-4 ${warningLevel ? "text-red-500 animate-pulse" : greenLevel ? "text-emerald-500" : "text-slate-400"}`} />
                             </CardHeader>
                             <CardContent className="flex flex-col items-center justify-center flex-1 pt-2">
-                                <div className={`text-4xl font-black ${warningLevel ? "text-red-700" : "text-slate-900"}`}>
+                                <div className={`text-4xl font-black ${warningLevel ? "text-red-700" : greenLevel ? "text-emerald-700" : "text-slate-900"}`}>
                                     {basesNaoCobertas} <span className="text-2xl font-bold opacity-70">/ {masterBases.length || 0}</span>
                                 </div>
-                                <div className={`text-xl font-bold mt-1 mb-2 ${warningLevel ? "text-red-600/80" : "text-slate-500/80"}`}>
+                                <div className={`text-xl font-bold mt-1 mb-2 ${warningLevel ? "text-red-600/80" : greenLevel ? "text-emerald-600/80" : "text-slate-500/80"}`}>
                                     {Math.round((basesNaoCobertas / (masterBases.length || 1)) * 100)}%
                                 </div>
-                                <p className={`text-xs text-center ${warningLevel ? "text-red-600" : "text-slate-500"}`}>Bases do Master <b>descobertas</b><br />nos últimos 3 dias.</p>
+                                <p className={`text-xs text-center ${warningLevel ? "text-red-600" : greenLevel ? "text-emerald-600" : "text-slate-500"}`}>Bases do Master <b>descobertas</b><br />nos últimos 3 dias.</p>
                             </CardContent>
                         </Card>
                     </div>
